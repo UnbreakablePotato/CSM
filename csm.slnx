@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/csm.Client/csm.Client.csproj" />
+    <Project Path="src/csm.Server/csm.Server.csproj" />
+  </Folder>
+</Solution>
