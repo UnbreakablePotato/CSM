@@ -1,18 +1,32 @@
 using csm.Server.Riot;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using DotNetEnv;
+using csm.Server.Pipeline;
+Env.TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-builder.Services.AddHostedService<Crawler>();
+builder.Services.AddHostedService<Initial>();
+builder.Services.AddHostedService<MatchIdWorker>();
+builder.Services.AddHostedService<MatchDataWorker>();
+builder.Services.AddHostedService<DBWorker>();
+
+builder.Services.AddSingleton<SharedQueue>();
 
 //Ihttpclientfactory
 builder.Services.AddHttpClient();
 
 builder.Services.AddTransient<RiotService>();
+
+builder.Services.AddDbContext<csm.Server.Data.AppDbContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+});
 
 
 var app = builder.Build();
