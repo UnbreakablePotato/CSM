@@ -9,7 +9,7 @@ namespace csm.Server.Pipeline
 
         public Channel<string> MatchIdsChannel { get; } = Channel.CreateUnbounded<string>();
 
-        public Channel<DTO.Match.MatchInfo> MatchDataChannel { get; } = Channel.CreateUnbounded<DTO.Match.MatchInfo>();
+        public Channel<DTO.Match.MatchResponse> MatchDataChannel { get; } = Channel.CreateUnbounded<DTO.Match.MatchResponse>();
 
         public ConcurrentDictionary<string,bool> VisitedMatches { get; } = new ConcurrentDictionary<string, bool>();
 
