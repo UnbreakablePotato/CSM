@@ -31,7 +31,7 @@ namespace csm.Server.Pipeline
                 {
                     Console.WriteLine($"Error occurred while executing MatchDataWorker service: {ex.Message}");
                 }
-            })
+            }
         }
     }
 }
