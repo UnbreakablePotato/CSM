@@ -12,5 +12,11 @@ namespace csm.Server.Data
 
         public DbSet<Models.Participant> Participants { get; set; }
 
+        public DbSet<Models.Core> Cores { get; set; }
+
+        public DbSet<Models.Build> Builds { get; set; }
+
+
+
     }
 }

@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using DotNetEnv;
 using csm.Server.Pipeline;
+using csm.Server.DTO;
 Env.TraversePath().Load();
 
 var builder = WebApplication.CreateBuilder(args);
@@ -80,13 +81,18 @@ summoner.MapPut("/{server}/{name}/refresh", lambda)
 
 var ladder = app.MapGroup("/api/v1/ladder");
 
-/*
-Get ladder for a specific server
-ladder.MapGet("/{server}", lambda)
 
-Update ladder with PUT req
-ladder.MapPut("/{server}", lambda)
-*/
+//Get ladder for a specific server
+ladder.MapGet("/{server}", async (string server, RiotService riotService) =>
+{
+    var obj = await riotService.GetLadder(server);
+
+}
+);
+
+//Update ladder with PUT req
+//ladder.MapPut("/{server}", lambda)
+
 
 var build = app.MapGroup("/api/v1/champions");
 
@@ -100,28 +106,4 @@ app.Run();
 record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
-
-public class Crawler : BackgroundService
-{
-    private readonly ILogger<Crawler> _logger;
-
-    public Crawler(ILogger<Crawler> logger)
-    {
-        _logger = logger;
-    }
-
-    protected override async Task ExecuteAsync(CancellationToken stopToken)
-    {
-        _logger.LogInformation("Crawler is starting");
-
-        while (!stopToken.IsCancellationRequested)
-        {
-            _logger.LogInformation("Crawler is working...");
-
-            //await SomeWork();
-        }
-
-        _logger.LogInformation("Crawler has stopped work...");
-    }
-}
+}½

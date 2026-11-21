@@ -24,8 +24,21 @@ namespace csm.Server.Pipeline
                 {
                     var puuid = await _sharedQueue.PuuidsChannel.Reader.ReadAsync(stoppingToken);
                     var matchIds = await _riotService.GetMatchIds("euw1",puuid);
+
+                    if (matchIds == null || matchIds.Count == 0)
+                    {
+                        Console.WriteLine($"No match ids found for puuid: {puuid}");
+                        continue;
+                    }
+
                     foreach (var matchId in matchIds)
                     {
+                        if (_sharedQueue.VisitedMatches.ContainsKey(matchId))
+                        {
+                            Console.WriteLine($"MatchId: {matchId} already exists in visited matches. Skipping.");
+                            continue;
+                        }
+
                         await _sharedQueue.MatchIdsChannel.Writer.WriteAsync(matchId, stoppingToken);
                     }
                 }
