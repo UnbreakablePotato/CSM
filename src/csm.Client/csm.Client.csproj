@@ -9,7 +9,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Fonts\Exo2-Italic-VariableFont_wght.ttf" />
+    <None Remove="Fonts\Exo2-VariableFont_wght.ttf" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Fonts\Exo2-Italic-VariableFont_wght.ttf" />
+    <Resource Include="Fonts\Exo2-VariableFont_wght.ttf" />
+    <Resource Include="Resources\*.jpg" />
+    <Resource Include="Resources\*.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="DotNetEnv" Version="3.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DTO\" />
   </ItemGroup>
 
 </Project>

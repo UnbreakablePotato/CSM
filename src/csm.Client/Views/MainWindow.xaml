@@ -1,0 +1,106 @@
+﻿<Window x:Class="csm.Client.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:csm.Client"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="750" Width="1200">
+    <Window.Resources>
+
+        <Style x:Key="NavigationButton" TargetType="Button">
+
+            <Setter Property="Foreground" Value="#A0A8B5"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="18,10"/>
+            <Setter Property="Margin" Value="5,0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="ExtraBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontFamily" Value="pack://application:,,,/YourAssemblyName;component/Fonts/#Exo 2"/>
+
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+
+                        <Border x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="6"
+                            Padding="{TemplateBinding Padding}">
+
+                            <ContentPresenter
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"/>
+
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+
+                            <!-- Hover -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonBorder"
+                                    Property="Background"
+                                    Value="#1C456F"/>
+                                <Setter Property="Foreground"
+                                    Value="#FFFFFF"/>
+                            </Trigger>
+
+                            <!-- Pressed -->
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonBorder"
+                                    Property="Background"
+                                    Value="#354C69"/>
+                            </Trigger>
+
+                            <!-- Disabled -->
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4"/>
+                            </Trigger>
+
+                        </ControlTemplate.Triggers>
+
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+
+        </Style>
+
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <!-- Navigation bar -->
+            <RowDefinition Height="60"/>
+
+            <!-- Page content -->
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <!-- Navigation bar -->
+        <StackPanel Grid.Row="0"
+            Orientation="Horizontal"
+            Background="#102D50"
+            VerticalAlignment="Stretch">
+
+            <Button Content="Home"
+            Style="{StaticResource NavigationButton}"
+            Click="Home_Click"/>
+
+            <Button Content="Tier Lists"
+            Style="{StaticResource NavigationButton}"
+            Click="Tierlist_Click"/>
+
+            <Button Content="Leaderboard"
+            Style="{StaticResource NavigationButton}"
+            Click="Leaderboard_Click"/>
+
+        </StackPanel>
+
+
+        <Frame x:Name="MainFrame"
+         Grid.Row="1"
+         NavigationUIVisibility="Hidden"/>
+
+
+    </Grid>
+</Window>
