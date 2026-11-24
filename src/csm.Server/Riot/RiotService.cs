@@ -18,13 +18,15 @@ namespace csm.Server.Riot
         public async Task<Puuid?> GetPuuidAsync(string region,string gamename, string tag)
         {
             HttpClient client = _httpClientFactory.CreateClient();
-            
 
+            var route = RegionRouter.Resolve(region);
+
+            var regionalServer = route.Regional;
             //using var client = _httpClientFactory.CreateClient();
 
             try
             {
-                var response = await client.GetAsync($"https://{region}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{gamename}/{tag}?api_key={api_key}");
+                var response = await client.GetAsync($"https://{regionalServer}.api.riotgames.com/riot/account/v1/accounts/by-riot-id/{gamename}/{tag}?api_key={api_key}");
                 
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
@@ -34,9 +36,10 @@ namespace csm.Server.Riot
                         {
                             Console.WriteLine($"Rate limit exceeded. Retrying after {retryAfterSeconds} seconds...");
                             await Task.Delay(retryAfterSeconds * 1000);
-                            return await GetPuuidAsync(region, gamename, tag);
+                            return await GetPuuidAsync(regionalServer, gamename, tag);
                         }
                     }
+                    response.EnsureSuccessStatusCode();
 
                 }
 
@@ -54,12 +57,48 @@ namespace csm.Server.Riot
             }
         }
 
+        public async Task<LeagueEntryDTO> GetLEDTO(string region, string puuid)
+        {
+            HttpClient client = _httpClientFactory.CreateClient();
+
+            var route = RegionRouter.Resolve(region);
+
+            var PlatformServer = route.Platform;
+
+            try
+            {
+                var response = await client.GetAsync($"https://{PlatformServer}.api.riotgames.com/lol/league/v4/entries/by-puuid/{puuid}?api_key={api_key}");
+
+                if (response.Headers.TryGetValues("Retry-After", out var retryAfterValues))
+                {
+                    if (int.TryParse(retryAfterValues.FirstOrDefault(), out var retryAfterSeconds))
+                    {
+                        await Task.Delay(retryAfterSeconds * 1000);
+                        return await GetLEDTO(PlatformServer, puuid);
+                    }
+                }
+                response.EnsureSuccessStatusCode();
+
+                var entries = await response.Content.ReadFromJsonAsync<List<LeagueEntryDTO>>();
+
+                return entries?.FirstOrDefault(x => x.QueueType == "RANKED_SOLO_5X5");
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine(ex.Message);
+                throw new Exception("Error occurred while making HTTP request to /matches/by-puuid endpoint.", ex);
+            }
+        }
+
         public async Task<List<string>?> GetMatchIds(string region, string puuid)
         {
             HttpClient client = _httpClientFactory.CreateClient();
+            var route = RegionRouter.Resolve(region);
+
+            var regionalServer = route.Regional;
             try
             {
-                var response = await client.GetAsync($"https://{region}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?start=0&count=10&api_key={api_key}");
+                var response = await client.GetAsync($"https://{regionalServer}.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?start=0&count=10&api_key={api_key}");
 
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
@@ -69,10 +108,11 @@ namespace csm.Server.Riot
                         {
                             Console.WriteLine($"Rate limit exceeded. Retrying after {retryAfterSeconds} seconds...");
                             await Task.Delay(retryAfterSeconds * 1000);
-                            return await GetMatchIds(region, puuid);
+                            return await GetMatchIds(regionalServer, puuid);
                         }
                     }
                 }
+                response.EnsureSuccessStatusCode();
 
                 List<string>? matchIds = await response.Content.ReadFromJsonAsync<List<string>>();
 
@@ -88,9 +128,12 @@ namespace csm.Server.Riot
         public async Task<Ladder?> GetLadder(string region)
         {
             HttpClient client = _httpClientFactory.CreateClient();
+            var route = RegionRouter.Resolve(region);
+
+            var PlatformServer = route.Platform;
             try
             {
-                var response = await client.GetAsync($"https://{region}.api.riotgames.com/lol/league/v4/challengerleagues/by-queue/RANKED_SOLO_5x5?api_key={api_key}");
+                var response = await client.GetAsync($"https://{PlatformServer}.api.riotgames.com/lol/league/v4/challengerleagues/by-queue/RANKED_SOLO_5x5?api_key={api_key}");
 
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
@@ -100,7 +143,7 @@ namespace csm.Server.Riot
                         {
                             Console.WriteLine($"Rate limit exceeded. Retrying after {retryAfterSeconds} seconds...");
                             await Task.Delay(retryAfterSeconds * 1000);
-                            return await GetLadder(region);
+                            return await GetLadder(PlatformServer);
                         }
                     }
                 }
@@ -119,9 +162,12 @@ namespace csm.Server.Riot
         public async Task<Match.MatchResponse?> GetMatchData(string region, string matchId)
         {
             HttpClient client = _httpClientFactory.CreateClient();
+            var route = RegionRouter.Resolve(region);
+
+            var regionalServer = route.Regional;
             try
             {
-                var response = await client.GetAsync($"https://{region}.api.riotgames.com/lol/match/v5/matches/{matchId}?api_key={api_key}");
+                var response = await client.GetAsync($"https://{regionalServer}.api.riotgames.com/lol/match/v5/matches/{matchId}?api_key={api_key}");
 
                 if (response.StatusCode == HttpStatusCode.TooManyRequests)
                 {
@@ -131,7 +177,7 @@ namespace csm.Server.Riot
                         {
                             Console.WriteLine($"Rate limit exceeded. Retrying after {retryAfterSeconds} seconds...");
                             await Task.Delay(retryAfterSeconds * 1000);
-                            return await GetMatchData(region, matchId);
+                            return await GetMatchData(regionalServer, matchId);
                         }
                     }
                 }
