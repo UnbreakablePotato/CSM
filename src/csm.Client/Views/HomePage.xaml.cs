@@ -30,6 +30,7 @@ namespace csm.Client.Views
                 string gameName = GameNameBox.Text;
                 string tag = TagBox.Text;
 
+                
                 // use apiservice here 
             }
         }
@@ -42,6 +43,18 @@ namespace csm.Client.Views
 
         private void Leaderboard_Click(object sender, RoutedEventArgs e)
         {
+        }
+
+        private void StackPanel_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                string gameName = GameNameBox.Text;
+                string tag = TagBox.Text;
+
+                //NavigationService?.Navigate(new Profile(gamename, tag));
+                // use apiservice here 
+            }
         }
     }
 }

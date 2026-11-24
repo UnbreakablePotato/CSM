@@ -93,12 +93,40 @@
             <Button Content="Leaderboard"
             Style="{StaticResource NavigationButton}"
             Click="Leaderboard_Click"/>
+            
+            <StackPanel x:Name="search" Orientation="Horizontal" Width="429" Visibility="Collapsed" KeyDown="Search_KeyDown">
+                <ComboBox Width="80"
+      Height="30"
+      VerticalContentAlignment="Center"
+      HorizontalContentAlignment="Center"
+      FontSize="18"
+      FontFamily="pack://application:,,,/YourAssemblyName;component/Fonts/#Exo 2"
+      FontWeight="bold"
+      SelectedIndex="0">
+                    <ComboBoxItem Content="EUW"/>
+                    <ComboBoxItem Content="EUNE"/>
+                    <ComboBoxItem Content="NA"/>
+                    <ComboBoxItem Content="KR"/>
+                </ComboBox>
+
+                <TextBox x:Name="GameNameBox" Width="200" Height="30" FontFamily="pack://application:,,,/YourAssemblyName;component/Fonts/#Exo 2" Margin="10" ToolTip="gamename" VerticalContentAlignment="Center"/>
+
+                <TextBlock Text="#" Margin="0" VerticalAlignment="Center" FontSize="26"/>
+
+                <TextBox x:Name="TagBox" Width="100" Height="30" FontFamily="pack://application:,,,/YourAssemblyName;component/Fonts/#Exo 2" Margin="10" ToolTip="tag" VerticalContentAlignment="Center"/>
+
+
+
+                
+
+            </StackPanel>
 
         </StackPanel>
 
 
         <Frame x:Name="MainFrame"
          Grid.Row="1"
+         Navigated="MainFrame_Navigated"
          NavigationUIVisibility="Hidden"/>
 
 

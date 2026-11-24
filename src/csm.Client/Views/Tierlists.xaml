@@ -10,52 +10,133 @@
       d:DataContext="{d:DesignInstance Type=vm:TierlistViewModel}"
       Title="Tierlists">
 
+    <Page.Resources>
+        <!-- Column Header Text -->
+        <Style x:Key="TableHeaderText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#CCFFFFFF"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+        </Style>
+
+        <!-- Translucent Blended Row -->
+        <Style x:Key="TierlistRowBorder" TargetType="Border">
+            <Setter Property="Background" Value="#4D102D50"/>
+            <Setter Property="BorderBrush" Value="#26FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Height" Value="52"/>
+            <Setter Property="Margin" Value="0,4"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#7A102D50"/>
+                    <Setter Property="BorderBrush" Value="#55FFFFFF"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Shared Cell Text -->
+        <Style x:Key="CellTextBase" TargetType="TextBlock">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+    </Page.Resources>
+
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="279*"/>
-            <ColumnDefinition Width="121*"/>
-        </Grid.ColumnDefinitions>
         <Grid.Background>
             <ImageBrush ImageSource="/Resources/CSMBlue.jpg"
-            Stretch="UniformToFill"/>
+                        Stretch="UniformToFill"/>
         </Grid.Background>
 
-        <ItemsControl ItemsSource="{Binding Champions}" Grid.ColumnSpan="2">
+        <!-- Transparent Layout Container (no outer box) -->
+        <Grid Margin="40,20" MaxWidth="1000">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="36"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
 
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Grid Margin="5">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="50"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="100"/>
-                            <ColumnDefinition Width="100"/>
-                            <ColumnDefinition Width="100"/>
-                        </Grid.ColumnDefinitions>
+            <!-- Transparent Header directly on the background -->
+            <Border Grid.Row="0"
+                    BorderBrush="#40FFFFFF"
+                    BorderThickness="0,0,0,1"
+                    Margin="0,0,0,6"
+                    Padding="16,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="60"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="120"/>
+                        <ColumnDefinition Width="120"/>
+                    </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="{Binding Rank}"
-                           Grid.Column="0"/>
+                    <TextBlock Grid.Column="0" Text="RANK" Style="{StaticResource TableHeaderText}"/>
+                    <TextBlock Grid.Column="1" Text="CHAMPION" Style="{StaticResource TableHeaderText}" HorizontalAlignment="Left" Margin="10,0,0,0"/>
+                    <TextBlock Grid.Column="2" Text="WINRATE" Style="{StaticResource TableHeaderText}"/>
+                    <TextBlock Grid.Column="3" Text="PICKRATE" Style="{StaticResource TableHeaderText}"/>
+                    <TextBlock Grid.Column="4" Text="GAMES" Style="{StaticResource TableHeaderText}"/>
+                </Grid>
+            </Border>
 
-                        <TextBlock Text="{Binding Name}"
-                           Grid.Column="1"/>
+            <!-- Scrollable Rows -->
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Champions}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource TierlistRowBorder}" Cursor="Hand" MouseLeftButtonUp="Border_MouseLeftButtonUp">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="60"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition Width="120"/>
+                                        <ColumnDefinition Width="120"/>
+                                    </Grid.ColumnDefinitions>
 
-                        <TextBlock Text="{Binding WinRate,
-                    StringFormat={}{0:P2}}"
-                           Grid.Column="2"/>
+                                    <!-- Rank -->
+                                    <TextBlock Grid.Column="0"
+                                               Text="{Binding Rank}"
+                                               Style="{StaticResource CellTextBase}"
+                                               Foreground="#BFD9FF"
+                                               FontWeight="SemiBold"/>
 
-                        <TextBlock Text="{Binding PickRate,
-                    StringFormat={}{0:P2}}"
-                           Grid.Column="3"/>
+                                    <!-- Champion Name -->
+                                    <TextBlock Grid.Column="1"
+                                               Text="{Binding Name}"
+                                               Style="{StaticResource CellTextBase}"
+                                               HorizontalAlignment="Left"
+                                               Margin="10,0,0,0"
+                                               Foreground="#FFFFFF"
+                                               FontWeight="Bold"/>
 
-                        <TextBlock Text="{Binding GamesPlayed}"
-                                   Foreground="Black"
-                                   FontSize="20"
-                           Grid.Column="4"/>
-                    </Grid>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
+                                    <!-- Win Rate -->
+                                    <TextBlock Grid.Column="2"
+                                               Text="{Binding WinRate, StringFormat={}{0:P2}}"
+                                               Style="{StaticResource CellTextBase}"
+                                               Foreground="#FFFFFF"
+                                               FontWeight="Bold"/>
 
-        </ItemsControl>
+                                    <!-- Pick Rate -->
+                                    <TextBlock Grid.Column="3"
+                                               Text="{Binding PickRate, StringFormat={}{0:P2}}"
+                                               Style="{StaticResource CellTextBase}"
+                                               Foreground="#FFFFFF"
+                                               FontWeight="SemiBold"/>
 
+                                    <!-- Games Played -->
+                                    <TextBlock Grid.Column="4"
+                                               Text="{Binding GamesPlayed, StringFormat={}{0:N0}}"
+                                               Style="{StaticResource CellTextBase}"
+                                               Foreground="#D6E6FF"/>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Page>

@@ -28,9 +28,10 @@ public partial class MainWindow : Window
     {
         if (e.Key == Key.Enter)
         {
-           // string gameName = GameNameBox.Text;
-            //string tag = TagBox.Text;
+            string gameName = GameNameBox.Text;
+            string tag = TagBox.Text;
 
+            //MainFrame.Navigate(new Profile());
             // use apiservice here 
         }
     }
@@ -49,5 +50,10 @@ public partial class MainWindow : Window
     private void Leaderboard_Click(object sender, RoutedEventArgs e)
     {
         MainFrame.Navigate(new Leaderboard());
+    }
+
+    private void MainFrame_Navigated(object sender, NavigationEventArgs e)
+    {
+        search.Visibility = e.Content is (csm.Client.Views.Leaderboard or Tierlists) ? Visibility.Visible : Visibility.Collapsed;
     }
 }

@@ -14,13 +14,9 @@
              Stretch="UniformToFill"/>
         </Grid.Background>
 
-        <Button Margin="-10,-15,744,401" RenderTransformOrigin="0.44,0.18">
-            <Button.Template>
-                <ControlTemplate>
-                    <Image Source="/Resources/CSMLogoRefined.png"/>
-                </ControlTemplate>
-            </Button.Template>
-        </Button>
+        
+
+        
 
     </Grid>
 </Page>

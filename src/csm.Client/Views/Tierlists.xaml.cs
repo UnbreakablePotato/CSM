@@ -28,6 +28,13 @@ namespace csm.Client.Views
             //MessageBox.Show($"Champions: {vm.Champions.Count}");
 
             DataContext = vm;
+
+
+        }
+
+        private void Border_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            NavigationService?.Navigate(new Build());
         }
     }
 }
