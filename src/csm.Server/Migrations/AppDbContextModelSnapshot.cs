@@ -107,6 +107,35 @@ namespace csm.Server.Migrations
                     b.ToTable("Builds");
                 });
 
+            modelBuilder.Entity("csm.Server.Models.Champion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChampionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ChampionName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("GamesPlayed")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Pickrate")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Winrate")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Champions");
+                });
+
             modelBuilder.Entity("csm.Server.Models.Core", b =>
                 {
                     b.Property<int>("Id")

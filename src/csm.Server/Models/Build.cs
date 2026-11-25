@@ -28,6 +28,8 @@ namespace csm.Server.Models
         public int Id { get; set; }
         public required int ChampionId { get; set; }
 
+        public string ChampionName { get; set; } = string.Empty;
+
         public string? ChampionIcon { get; set; }
 
         public string? Position { get; set; }
@@ -72,6 +74,10 @@ namespace csm.Server.Models
         public int Spell1 { get; set; }
 
         public int Spell2 { get; set; }
+
+        public double Winrate { get; set; }
+
+        public int GamesPlayed { get; set; }
 
         public List<Matchup>? Matchups { get; set; }
 

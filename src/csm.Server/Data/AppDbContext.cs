@@ -16,6 +16,8 @@ namespace csm.Server.Data
 
         public DbSet<Models.Build> Builds { get; set; }
 
+        public DbSet<Models.Champion>  Champions{ get; set; }
+
 
 
     }
