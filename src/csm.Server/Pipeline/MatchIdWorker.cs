@@ -1,46 +1,92 @@
-﻿using csm.Server.Riot;
+﻿using csm.Server.Data;
+using csm.Server.Riot;
+using Microsoft.EntityFrameworkCore;
 
 namespace csm.Server.Pipeline
 {
     /*
-     MatchIdWorker should pop from the channel with puuids in it, then call RiotService to get 10 match ids for that puuid.
-     It should then add those match ids to a channel for the next worker to pop from.
+     MatchIdWorker pops from PlayerChannel, fetches Ranked Solo/Duo match ids from the last 24 hours
+     (paginated), deduplicates against memory and SQL Server, and pushes unseen match ids to MatchIdsChannel.
      */
     public class MatchIdWorker : BackgroundService
     {
         private readonly SharedQueue _sharedQueue;
         private readonly RiotService _riotService;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public MatchIdWorker(SharedQueue sharedQueue, RiotService riotService)
+        public MatchIdWorker(SharedQueue sharedQueue, RiotService riotService, IServiceScopeFactory serviceScopeFactory)
         {
             _sharedQueue = sharedQueue;
             _riotService = riotService;
+            _serviceScopeFactory = serviceScopeFactory;
         }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
-                    var puuid = await _sharedQueue.PuuidsChannel.Reader.ReadAsync(stoppingToken);
-                    var matchIds = await _riotService.GetMatchIds("euw1",puuid);
+                    var player = await _sharedQueue.PlayerChannel.Reader.ReadAsync(stoppingToken);
+                    long startTime = _sharedQueue.CycleStartTimeUnixSeconds;
+                    int start = 0;
+                    const int pageSize = 100;
 
-                    if (matchIds == null || matchIds.Count == 0)
+                    while (!stoppingToken.IsCancellationRequested)
                     {
-                        Console.WriteLine($"No match ids found for puuid: {puuid}");
-                        continue;
-                    }
+                        var matchIds = await _riotService.GetMatchIds(player.region, player.puuid, startTime, start, pageSize);
 
-                    foreach (var matchId in matchIds)
-                    {
-                        if (_sharedQueue.VisitedMatches.ContainsKey(matchId))
+                        if (matchIds == null || matchIds.Count == 0)
                         {
-                            Console.WriteLine($"MatchId: {matchId} already exists in visited matches. Skipping.");
-                            continue;
+                            break;
                         }
 
-                        await _sharedQueue.MatchIdsChannel.Writer.WriteAsync(matchId, stoppingToken);
+                        var candidateIds = new List<string>();
+
+                        foreach (var matchId in matchIds)
+                        {
+                            if (_sharedQueue.VisitedMatches.TryAdd(matchId, true))
+                            {
+                                candidateIds.Add(matchId);
+                            }
+                        }
+
+                        if (candidateIds.Count > 0)
+                        {
+                            using var scope = _serviceScopeFactory.CreateScope();
+                            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+                            var existingMatchIds = await dbContext.Participants
+                                .AsNoTracking()
+                                .Where(x => candidateIds.Contains(x.MatchId))
+                                .Select(x => x.MatchId)
+                                .Distinct()
+                                .ToListAsync(stoppingToken);
+
+                            var existingSet = new HashSet<string>(existingMatchIds);
+
+                            foreach (var matchId in candidateIds)
+                            {
+                                if (existingSet.Contains(matchId))
+                                {
+                                    continue;
+                                }
+
+                                await _sharedQueue.MatchIdsChannel.Writer.WriteAsync(new Match(player.region, matchId), stoppingToken);
+                            }
+                        }
+
+                        if (matchIds.Count < pageSize)
+                        {
+                            break;
+                        }
+
+                        start += pageSize;
                     }
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    break;
                 }
                 catch (Exception ex)
                 {

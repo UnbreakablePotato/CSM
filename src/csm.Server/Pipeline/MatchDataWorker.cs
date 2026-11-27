@@ -23,9 +23,26 @@ namespace csm.Server.Pipeline
             {
                 try
                 {
-                    var matchId = await _sharedQueue.MatchIdsChannel.Reader.ReadAsync(stoppingToken);
-                    var matchData = await _riotService.GetMatchData("euw1", matchId);
-                    await _sharedQueue.MatchDataChannel.Writer.WriteAsync(matchData, stoppingToken);
+                    var match = await _sharedQueue.MatchIdsChannel.Reader.ReadAsync(stoppingToken);
+                    var matchData = await _riotService.GetMatchData(match.region, match.matchid);
+                    if (matchData == null)
+                    {
+                        continue;
+                    }
+
+                    foreach (var puuid in matchData.Metadata.Participants)
+                    {
+                        if (!string.IsNullOrEmpty(puuid) && _sharedQueue.VisitedPuuids.TryAdd(puuid, true))
+                        {
+                            await _sharedQueue.PlayerChannel.Writer.WriteAsync(new Player(match.region, puuid), stoppingToken);
+                        }
+                    }
+
+                    await _sharedQueue.MatchDataChannel.Writer.WriteAsync(new MatchData(match.region, matchData), stoppingToken);
+                }
+                catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                {
+                    break;
                 }
                 catch (Exception ex)
                 {

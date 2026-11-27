@@ -28,11 +28,13 @@ namespace csm.Server.Models
         public int Id { get; set; }
         public required int ChampionId { get; set; }
 
-        public string ChampionName { get; set; } = string.Empty;
+        public string? ChampionName { get; set; }
 
         public string? ChampionIcon { get; set; }
 
         public string? Position { get; set; }
+
+        public string? Tier { get; set; }
 
         public int Item0 { get; set; }
 

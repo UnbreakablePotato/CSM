@@ -16,7 +16,18 @@ namespace csm.Server.Services
         {
             var tierlist = await _context.Builds
                 .AsNoTracking()
-                //.OrderByDescending(x => x.Winrate)
+                .GroupBy(x => x.ChampionName)
+                .Select(y => y.OrderByDescending(x => x.Winrate).First())
+                .OrderByDescending(x => x.Winrate)
+                .ToListAsync();
+
+            return tierlist;
+        }
+
+        public async Task<List<Models.Build>> GetSpecificTierlistAsync(string server)
+        {
+            var tierlist = await _context.Builds
+                .AsNoTracking()
                 .ToListAsync();
 
             return tierlist;

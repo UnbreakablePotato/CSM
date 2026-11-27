@@ -2,7 +2,7 @@
 {
     public class Entries
     {
-        public required string SummonerName { get; set; }
+        public string? SummonerName { get; set; }
         public required string Puuid { get; set; }
         public required int LeaguePoints { get; set; }
         public required int Wins { get; set; }

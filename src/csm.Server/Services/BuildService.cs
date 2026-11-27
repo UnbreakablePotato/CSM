@@ -12,12 +12,13 @@ namespace csm.Server.Services
             _context = context;
         }
 
-        public async Task<Models.Build> GetBuildAsync(string champion)
+        public async Task<Models.Build> GetBuildAsync(string champion, string tier)
         {
             var build = await _context.Builds
-                .Where(x => x.ChampionName == champion)
-                .OrderByDescending(x => x.Winrate)
                 .AsNoTracking()
+                .Where(x => x.Tier == tier && x.ChampionName == champion)
+                .OrderByDescending(x => x.GamesPlayed)
+                .ThenByDescending(x => x.Winrate)
                 .ToListAsync();
 
             return build[0];

@@ -12,28 +12,53 @@ namespace csm.Server.Pipeline
         private readonly SharedQueue _sharedQueue;
         private readonly RiotService _riotService;
 
-        public Initial(SharedQueue sharedQueue, RiotService riotService)
+        private readonly IConfiguration _configuration;
+
+        public Initial(SharedQueue sharedQueue, RiotService riotService, IConfiguration configuration)
         {
             _sharedQueue = sharedQueue;
             _riotService = riotService;
+            _configuration = configuration;
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            var regions = _configuration
+                    .GetSection("Pipeline:Regions")
+                    .Get<string[]>() ?? [];
+
             while (!stoppingToken.IsCancellationRequested)
             {
-                try
-                {
-                    var ladder = await _riotService.GetLadder("euw1");
+                _sharedQueue.ResetForNewCycle();
 
-                    foreach (var entry in ladder.Entries)
+                foreach (var region in regions)
+                {
+                    try
                     {
-                        await _sharedQueue.PuuidsChannel.Writer.WriteAsync(entry.Puuid, stoppingToken);
+                        var ladder = await _riotService.GetLadder(region);
+
+                        if (ladder == null || ladder.Entries == null)
+                        {
+                            continue;
+                        }
+
+                        foreach (var entry in ladder.Entries)
+                        {
+                            if (!string.IsNullOrEmpty(entry.Puuid) && _sharedQueue.VisitedPuuids.TryAdd(entry.Puuid, true))
+                            {
+                                await _sharedQueue.PlayerChannel.Writer.WriteAsync(new Player(region, entry.Puuid), stoppingToken);
+                            }
+                        }
+                    }
+                    catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Error occurred while executing Initial service: {ex.Message}");
                     }
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error occurred while executing Initial service: {ex.Message}");
-                }
+                
                 await Task.Delay(TimeSpan.FromHours(24), stoppingToken);
             }
         }

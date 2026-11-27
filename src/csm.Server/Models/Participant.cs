@@ -4,7 +4,8 @@ namespace csm.Server.Models
 {
     public class Participant
     {
-        public required string Id { get; set; } //matchId
+        public int Id { get; set; }
+        public required string MatchId { get; set; } //matchId
 
         public string? Puuid { get; set; }
 

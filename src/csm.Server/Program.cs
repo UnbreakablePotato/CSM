@@ -23,7 +23,12 @@ builder.Services.AddSingleton<SharedQueue>();
 //Ihttpclientfactory
 builder.Services.AddHttpClient();
 
+builder.Services.AddSingleton<RiotRateLimiter>();
 builder.Services.AddTransient<RiotService>();
+builder.Services.AddScoped<csm.Server.Services.SummonerService>();
+builder.Services.AddScoped<csm.Server.Services.TierlistService>();
+builder.Services.AddScoped<csm.Server.Services.BuildService>();
+builder.Services.AddScoped<csm.Server.Services.DragontailService>();
 
 builder.Services.AddDbContext<csm.Server.Data.AppDbContext>(options =>
 {
@@ -62,27 +67,19 @@ app.MapGet("/weatherforecast", () =>
 
 var summoner = app.MapGroup("/api/v1/summoner");
 
-//Ikke helt done
-
-summoner.MapGet("/{server}/{name+tag}", async (RiotService riotservice, string server, string name, string tag, int count = 10) =>
+summoner.MapGet("/{server}/{gameName}/{tagLine}", async (csm.Server.Services.SummonerService summonerService, string server, string gameName, string tagLine, int count = 10) =>
 {
-    var route = RegionRouter.Resolve(server);
-    var RegionalServer = route.Regional;
-    var PlatformServer = route.Platform;
+    var obj = await summonerService.GetSummonerProfileAsync(server, gameName, tagLine, count);
 
-    try
+    if (obj == null)
     {
-        var obj = await riotservice.GetPuuidAsync(RegionalServer, name, tag);
-        var user = await riotservice.GetLEDTO(PlatformServer, obj.PuuidId);
+        return Results.NotFound($"Could not find summoner '{gameName}#{tagLine}' on '{server}'");
+    }
 
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine(ex.Message);
-    }
+    return Results.Ok(obj);
 });
 
-summoner.MapGet("/{server}/{name+tag}/{matchid}", async (RiotService riotservice, string server, string matchid) =>
+summoner.MapGet("/{server}/{gameName}/{tagLine}/{matchid}", async (RiotService riotservice, string server, string matchid) =>
 {
     var route = RegionRouter.Resolve(server);
 
@@ -146,6 +143,20 @@ var build = app.MapGroup("/api/v1/champions");
 Get a champions build based on tier and lane 
 build.MapGet("/{championName}", (string championName, string lane, string tier) => ...) 
 */
+
+var tierlist = app.MapGroup("/api/v1/tierlist");
+
+tierlist.MapGet("/", async (csm.Server.Services.TierlistService tierlistservice) =>
+{
+    var obj = await tierlistservice.GetTierlistAsync();
+
+    if (obj == null)
+    {
+        return Results.NotFound("Could not return a tier list");
+    }
+
+    return Results.Ok(obj);   
+});
 
 app.Run();
 

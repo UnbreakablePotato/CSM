@@ -4,3 +4,38 @@ GET {{csm.Server_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###
+
+GET {{csm.Server_HostAddress}}/api/v1/summoner/euw/kaori/euw33/
+Accept: application/json
+
+###
+
+GET {{csm.Server_HostAddress}}/api/v1/summoner/na/tyler/4198/
+Accept: application/json
+
+###
+
+GET {{csm.Server_HostAddress}}/api/v1/summoner/kr/almond%20joy/KR3/
+Accept: application/json
+
+###
+
+GET {{csm.Server_HostAddress}}/api/v1/summoner/euw/genichiro/felix/
+Accept: application/json
+
+###
+
+GET {{csm.Server_HostAddress}}/api/v1/summoner/eune/shizeR/style/
+Accept: application/json
+
+###
+
+GET {{csm.Server_HostAddress}}/api/v1/summoner/kr/hide%20on%20bush/KR1/
+Accept: application/json
+
+###
+
+GET {{csm.Server_HostAddress}}/api/v1/summoner/euw/super%20carry/gank/
+Accept: application/json
+
+###
